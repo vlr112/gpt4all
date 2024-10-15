@@ -1,5 +1,10 @@
 <h1 align="center">GPT4All</h1>
 
+
+<p align="center">
+  Forked repository from <a href="https://www.nomic.ai/gpt4all">nomicAI</a>. Work in progress on folder gpt4all-chat. Integrate third party software in LocalDocs section, to enable automatic scientific articles retrieval, instead of manually uploading them to the platform.
+</p>
+
 <p align="center">
   <a href="https://www.nomic.ai/gpt4all">Website</a> &bull; <a href="https://docs.gpt4all.io">Documentation</a> &bull; <a href="https://discord.gg/mGZE39AS3e">Discord</a> &bull; <a href="https://www.youtube.com/watch?v=gQcZDXRVJok">YouTube Tutorial</a>
 </p>
@@ -7,9 +12,9 @@
 <p align="center">
   GPT4All runs large language models (LLMs) privately on everyday desktops & laptops.
 </p>
-<p align="center">
+<!-- <p align="center">
   No API calls or GPUs required - you can just download the application and <a href="https://docs.gpt4all.io/gpt4all_desktop/quickstart.html#quickstart">get started</a>.
-</p>
+</p> -->
 
 <p align="center">
   Read about what's new in <a href="https://www.nomic.ai/blog/tag/gpt4all">our blog</a>.
@@ -26,7 +31,7 @@ GPT4All is made possible by our compute partner <a href="https://www.paperspace.
 <p align="center">
  <a href="https://www.phorm.ai/query?projectId=755eecd3-24ad-49cc-abf4-0ab84caacf63"><img src="https://img.shields.io/badge/Phorm-Ask_AI-%23F2777A.svg" alt="phorm.ai"></a>
 </p>
-
+<!-- 
 ## Download Links
 
 <p>
@@ -121,4 +126,4 @@ If you utilize this repository, models or data in a downstream project, please c
   journal = {GitHub repository},
   howpublished = {\url{https://github.com/nomic-ai/gpt4all}},
 }
-```
+``` -->

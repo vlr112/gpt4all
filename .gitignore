@@ -188,3 +188,5 @@ cmake-build-*
 
 # LLM models
 *.gguf
+
+.fake
