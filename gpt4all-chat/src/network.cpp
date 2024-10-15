@@ -519,3 +519,55 @@ void Network::handleHealthFinished()
     }
     healthReply->deleteLater();
 }
+
+void Network::fetchSearchResults(const QString &searchTerm) {
+    // Construct the URL with the encoded search term
+    QString baseUrl = "https://openknowledgemaps.org/search?service=base&type=get&sorting=most-relevant&min_descsize=300&q=";
+    QString encodedSearchTerm = QUrl::toPercentEncoding(searchTerm);
+    QString searchUrl = baseUrl + encodedSearchTerm;
+
+    // Create a network request
+    QNetworkRequest request;
+    request.setUrl(QUrl(searchUrl));
+
+    // Set headers (optional)
+    request.setRawHeader("User-Agent", "Mozilla/5.0");
+    request.setRawHeader("X-Requested-With", "XMLHttpRequest");
+
+    // Make the GET request using the existing QNetworkAccessManager
+    QNetworkReply *reply = m_networkManager.get(request);
+
+    // Connect the finished signal to a slot to handle the response
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray response = reply->readAll();
+
+            // Parse the JSON response
+            QJsonDocument jsonResponse = QJsonDocument::fromJson(response);
+            QJsonObject jsonObject = jsonResponse.object();
+            QJsonArray dataArray = jsonObject["data"].toArray();
+
+            // Extract DOIs or links from the response
+            QStringList values;
+            for (const QJsonValue &value : dataArray) {
+                QJsonObject paperObject = value.toObject();
+                QString doi = paperObject["doi"].toString();
+                QString link = paperObject["link"].toString();
+
+                if (!doi.isEmpty()) {
+                    values.append(doi);
+                } else if (!link.isEmpty()) {
+                    values.append(link);
+                }
+            }
+
+            // Emit the search results signal with the extracted data
+            emit searchResultsReady(values.join("\n"));
+        } else {
+            emit searchResultsReady("Error: " + reply->errorString());
+        }
+
+        reply->deleteLater();
+    });
+}
+

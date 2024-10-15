@@ -33,7 +33,7 @@ LocalDocs::LocalDocs()
         &Database::start, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestForceIndexing, m_database,
         &Database::forceIndexing, Qt::QueuedConnection);
-    connect(this, &LocalDocs::forceRebuildFolder, m_database,
+    connect(this    , &LocalDocs::forceRebuildFolder, m_database,
         &Database::forceRebuildFolder, Qt::QueuedConnection);
     connect(this, &LocalDocs::requestAddFolder, m_database,
         &Database::addFolder, Qt::QueuedConnection);

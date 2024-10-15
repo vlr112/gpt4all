@@ -11,6 +11,8 @@
 #include <gpt4all-backend/llmodel.h>
 #include <singleapplication.h>
 
+#include <QGuiApplication>
+#include <QQmlContext> // Include this for QQmlContext
 #include <QCoreApplication>
 #include <QObject>
 #include <QQmlApplicationEngine>
@@ -91,6 +93,10 @@ int main(int argc, char *argv[])
     MySettings::globalInstance()->setLanguageAndLocale();
 
     QQmlApplicationEngine engine;
+
+    // Expose the global instance of the Network class to QML
+    Network *networkManager = Network::globalInstance();
+    engine.rootContext()->setContextProperty("networkManager", networkManager);
 
     // Add a connection here from MySettings::languageAndLocaleChanged signal to a lambda slot where I can call
     // engine.uiLanguage property

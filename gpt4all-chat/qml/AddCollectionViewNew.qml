@@ -16,7 +16,7 @@ import mysettings
 import localdocs
 
 Rectangle {
-    id: addCollectionView
+    id: addCollectionView2
 
     Theme {
         id: theme
@@ -65,7 +65,7 @@ Rectangle {
             id: addDocBanner
             Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
             horizontalAlignment: Qt.AlignHCenter
-            text: qsTr("Add Document Collection from scratch")
+            text: qsTr("Use AI-search based engine, Open Knowledge Maps to gather papers")
             font.pixelSize: theme.fontSizeBanner
             color: theme.titleTextColor
         }
@@ -75,7 +75,7 @@ Rectangle {
             Layout.maximumWidth: addDocBanner.width
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignJustify
-            text: qsTr("Add a folder containing plain text files, PDFs, or Markdown. Configure additional extensions in Settings.")
+            text: qsTr("Provide keyword(s) and that's that. You'll have a list of html papers.")
             font.pixelSize: theme.fontSizeLarger
             color: theme.titleInfoTextColor
         }
@@ -136,7 +136,7 @@ Rectangle {
             Label {
                 Layout.row: 3
                 Layout.column: 0
-                text: qsTr("Folder")
+                text: qsTr("Keywords")
                 font.bold: true
                 font.pixelSize: theme.fontSizeLarger
                 color: theme.settingsTitleTextColor
@@ -153,10 +153,10 @@ Rectangle {
                     id: folderEdit
                     Layout.fillWidth: true
                     text: root.folder_path
-                    placeholderText: qsTr("Folder path...")
+                    placeholderText: qsTr("Provide keywords...")
                     font.pixelSize: theme.fontSizeLarge
                     placeholderTextColor: theme.mutedTextColor
-                    ToolTip.text: qsTr("Folder path to documents (Required)")
+                    ToolTip.text: qsTr("keywords to feed AI-search based model(Required)")
                     ToolTip.visible: hovered
                     function showError() {
                         folderEdit.placeholderTextColor = theme.textErrorColor
@@ -168,7 +168,7 @@ Rectangle {
 
                 MySettingsButton {
                     id: browseButton
-                    text: qsTr("Browse")
+                    text: qsTr("Get papers list")
                     onClicked: {
                         root.openFolderDialog(StandardPaths.writableLocation(StandardPaths.HomeLocation), function(selectedFolder) {
                             root.folder_path = selectedFolder

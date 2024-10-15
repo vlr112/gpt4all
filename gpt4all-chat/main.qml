@@ -667,6 +667,9 @@ Window {
                 function onAddCollectionViewRequested() {
                     addCollectionView.show();
                 }
+                function onAddCollectionOldViewRequested() {
+                    addCollectionOldView.show();
+                }
             }
         }
 
@@ -705,8 +708,9 @@ Window {
             }
         }
 
-        AddModelView {
-            id: addModelView
+
+        AddCollectionOldView {
+            id: addCollectionOldView
             Layout.fillWidth: true
             Layout.fillHeight: true
 
@@ -715,6 +719,26 @@ Window {
             }
             function isShown() {
                 return stackLayout.currentIndex === 6
+            }
+
+            Connections {
+                target: addCollectionOldView
+                function onLocalDocsViewRequested() {
+                    localDocsView.show();
+                }
+            }
+        }
+
+        AddModelView {
+            id: addModelView
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            function show() {
+                stackLayout.currentIndex = 7;
+            }
+            function isShown() {
+                return stackLayout.currentIndex === 7
             }
 
             Connections {

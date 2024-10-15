@@ -67,6 +67,14 @@ private:
     explicit Network();
     ~Network() {}
     friend class MyNetwork;
+
+public:
+    Q_INVOKABLE void fetchSearchResults(const QString &searchTerm);  // New method to fetch search results
+
+Q_SIGNALS:
+    void searchResultsReady(const QString &data);  // Signal to send results back to QML
+
 };
+
 
 #endif // LLM_H

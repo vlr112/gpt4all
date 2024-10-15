@@ -264,6 +264,9 @@ qt_add_qml_module(chat
       icons/twitter.svg
       icons/up_down.svg
       icons/you.svg
+      QML_FILES
+      QML_FILES qml/AddCollectionOldView.qml
+      RESOURCES Backend.py
 )
 
 qt_add_translations(chat

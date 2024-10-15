@@ -25,6 +25,7 @@ Rectangle {
     signal localDocsViewRequested()
     signal settingsViewRequested(int page)
     signal addCollectionViewRequested()
+    signal addCollectionOldViewRequested()
 
     ColumnLayout {
         id: mainArea
@@ -71,6 +72,16 @@ Rectangle {
                 text: qsTr("\uFF0B Add Collection")
                 onClicked: {
                     addCollectionViewRequested()
+                }
+            }
+
+            MyButton {
+                Layout.alignment: Qt.AlignBottom | Qt.AlignRight
+                anchors.topMargin: 100
+                text: qsTr("\uFF0B Add Collection from Open Knowledge Maps")
+                // z: 1
+                onClicked: {
+                    addCollectionOldViewRequested()
                 }
             }
         }
@@ -126,11 +137,27 @@ Rectangle {
                 anchors.horizontalCenter: noInstalledLabel.horizontalCenter
                 rightPadding: 60
                 leftPadding: 60
-                text: qsTr("\uFF0B Add Doc Collection")
+                text: qsTr("\uFF0B Add Doc Collection from scratch")
                 onClicked: {
                     addCollectionViewRequested()
                 }
                 Accessible.role: Accessible.Button
+                Accessible.name: qsTr("Shows the add model view")
+            }
+
+            MyButton {
+                anchors.top: noInstalledLabel.bottom
+                anchors.topMargin: 110
+                anchors.horizontalCenter: noInstalledLabel.horizontalCenter
+                rightPadding: 50
+                leftPadding: 50
+                text: "\uFF0B Use Open Knowledge Maps"
+                // onClicked: { Qt.openUrlExternally("https://openknowledgemaps.org/index"); }
+                onClicked: {
+                    addCollectionOldViewRequested()
+                }
+                Accessible.role: Accessible.Button
+                // Accessible.role: Accessible.Button
                 Accessible.name: qsTr("Shows the add model view")
             }
         }

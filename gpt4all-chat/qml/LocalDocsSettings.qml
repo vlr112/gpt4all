@@ -35,6 +35,31 @@ MySettingsTab {
                 color: theme.styledTextColor
                 font.pixelSize: theme.fontSizeLarge
                 font.bold: true
+                text: qsTr("Connect to Open Knowledge Maps")
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: theme.settingsDivider
+            }
+        }
+
+        RowLayout {
+            MySettingsLabel {
+                text: qsTr("Literature Mapping Tool")
+                helpText: qsTr("Easily retrieve top documents using open source software Open Knowledge Maps.")
+                // helpText: qsTr('API key to use for Nomic Embed. Get one from the Atlas <a href="https://atlas.nomic.ai/cli-login">API keys page</a>. Requires restart.')
+                // onLinkActivated: function(link) { Qt.openUrlExternally(link)
+            }
+        }
+
+        ColumnLayout {
+            spacing: 10
+            Label {
+                color: theme.styledTextColor
+                font.pixelSize: theme.fontSizeLarge
+                font.bold: true
                 text: qsTr("Indexing")
             }
 
