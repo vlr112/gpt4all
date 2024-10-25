@@ -7,6 +7,7 @@
 #include "modellist.h"
 #include "mysettings.h"
 #include "network.h"
+#include "myfilemanager.h"
 
 #include <gpt4all-backend/llmodel.h>
 #include <singleapplication.h>
@@ -60,6 +61,7 @@ int main(int argc, char *argv[])
 
     Logger::globalInstance();
 
+
     SingleApplication app(argc, argv, true /*allowSecondary*/);
     if (app.isSecondary()) {
 #ifdef Q_OS_WINDOWS
@@ -94,9 +96,15 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
+    // Create an instance of FileManager
+    MyFileManager MyfileManager;
+
+    // Expose the file manager object to QML
+    engine.rootContext()->setContextProperty("MyfileManager", &MyfileManager);
+
     // Expose the global instance of the Network class to QML
-    Network *networkManager = Network::globalInstance();
-    engine.rootContext()->setContextProperty("networkManager", networkManager);
+    // Network *networkManager = Network::globalInstance();
+    // engine.rootContext()->setContextProperty("networkManager", networkManager);
 
     // Add a connection here from MySettings::languageAndLocaleChanged signal to a lambda slot where I can call
     // engine.uiLanguage property

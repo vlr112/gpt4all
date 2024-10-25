@@ -1,10 +1,12 @@
 import QtCore
+// import QFuture
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import Qt.labs.folderlistmodel
+// import QtWebEngine // Import required for WebEngineView
 import Qt5Compat.GraphicalEffects
 import llm
 import chatlistmodel
@@ -14,6 +16,7 @@ import network
 import gpt4all
 import mysettings
 import localdocs
+// import QtWebEngine
 
 Rectangle {
     id: addCollectionOldView
@@ -21,6 +24,11 @@ Rectangle {
     Theme {
         id: theme
     }
+
+    property var linksData: []  // Initialize an empty array to store link and HTML pairs
+    property int successCount: 0  // Count of successfully fetched HTML
+    property int failureCount: 0  // Count of failed fetch attempts
+
 
     color: theme.viewBackground
     signal localDocsViewRequested()
@@ -43,7 +51,6 @@ Rectangle {
                 id: backOldButton
                 Layout.alignment: Qt.AlignTop | Qt.AlignLeft
                 text: qsTr("\u2190 Existing Collections")
-
                 borderWidth: 0
                 backgroundColor: theme.lighterButtonBackground
                 backgroundColorHovered: theme.lighterButtonBackgroundHovered
@@ -86,19 +93,7 @@ Rectangle {
             rowSpacing: 50
             columnSpacing: 20
 
-            property alias collection: collection.text
-            // property alias folder_path: folderEdit.text
-
-            FolderDialog {
-                id: folderDialog
-                title: qsTr("Please choose a directory")
-            }
-
-            function openFolderDialog(currentFolder, onAccepted) {
-                folderDialog.currentFolder = currentFolder;
-                folderDialog.accepted.connect(function() { onAccepted(folderDialog.selectedFolder); });
-                folderDialog.open();
-            }
+            property alias collectionName: collectionField.text
 
             Label {
                 Layout.row: 2
@@ -110,7 +105,7 @@ Rectangle {
             }
 
             MyTextField {
-                id: collection
+                id: collectionField
                 Layout.row: 2
                 Layout.column: 1
                 Layout.minimumWidth: 400
@@ -122,14 +117,8 @@ Rectangle {
                 placeholderTextColor: theme.mutedTextColor
                 ToolTip.text: qsTr("Name for generated collection (Required)")
                 ToolTip.visible: hovered
-                Accessible.role: Accessible.EditableText
-                Accessible.name: collection.text
-                Accessible.description: ToolTip.text
-                function showError() {
-                    collection.placeholderTextColor = theme.textErrorColor
-                }
                 onTextChanged: {
-                    collection.placeholderTextColor = theme.mutedTextColor
+                    collectionField.placeholderTextColor = theme.mutedTextColor
                 }
             }
 
@@ -149,22 +138,6 @@ Rectangle {
                 Layout.maximumWidth: 400
                 Layout.alignment: Qt.AlignRight
                 spacing: 10
-                // MyDirectoryField {
-                //     id: folderEdit
-                //     Layout.fillWidth: true
-                //     text: root.folder_path
-                //     placeholderText: qsTr("Insert keywords...")
-                //     font.pixelSize: theme.fontSizeLarge
-                //     placeholderTextColor: theme.mutedTextColor
-                //     ToolTip.text: qsTr("Keywords to feed AI model (Required)")
-                //     ToolTip.visible: hovered
-                //     function showError() {
-                //         folderEdit.placeholderTextColor = theme.textErrorColor
-                //     }
-                //     onTextChanged: {
-                //         folderEdit.placeholderTextColor = theme.mutedTextColor
-                //     }
-                // }
 
                 TextField {
                     id: keywordField
@@ -176,97 +149,276 @@ Rectangle {
                     ToolTip.visible: hovered
                 }
 
-                MySettingsButton {
-                    id: browseButton
-                    text: qsTr("Browse")
-                    // When the button is clicked, fetch data using the search term
+                Button {
+                    text: qsTr("Fetch Results")
                     onClicked: {
-                        // Retrieve the text from keywordField
-                        var searchTerm = keywordField.text;
-
-                        if (searchTerm.length > 0) {
-                            // Call the C++ function to fetch search results
-                            networkManager.fetchSearchResults(searchTerm);
+                        if (keywordField.text !== "") {
+                            fetchSearchResults(keywordField.text, collectionField.text);
                         } else {
-                            console.log("Please enter a keyword to search.");
+                            keywordField.placeholderTextColor = theme.textErrorColor;
                         }
                     }
                 }
-
-                TextArea {
-                    id: resultArea
-                    width: parent.width
-                    height: parent.height / 2
-                    readOnly: true
-                    placeholderText: "Results will appear here..."
-                }
-
-                // Capture the signal from the NetworkManager when search results are ready
-                Connections {
-                    target: networkManager
-                    onSearchResultsReady: {
-                        resultArea.text = data;  // Display the results in the TextArea
-                    }
-                }
-
-
-                // MySettingsButton {
-                //     id: browseButton
-                //     text: qsTr("Browse")
-                //     // When the button is clicked, open the Open Knowledge Maps homepage
-                //     onClicked: {
-                //         // Retrieve the text from keywordField and encode it for the URL
-                //         var searchTerm = keywordField.text;
-                //         var encodedSearchTerm = encodeURIComponent(searchTerm); // URL-encode the search term
-                //         var searchUrl = "https://openknowledgemaps.org/search?service=base&type=get&sorting=most-relevant&min_descsize=300&q=" + encodedSearchTerm;
-                //         Qt.openUrlExternally(searchUrl);  // Open the URL in the default browser
-                //     }
-                // }
-
-                // TextField {
-                //     id: keywordField
-                //     Layout.fillWidth: true
-                //     placeholderText: qsTr("Insert keywords...")
-                //     font.pixelSize: theme.fontSizeLarge
-                //     placeholderTextColor: theme.mutedTextColor
-                //     ToolTip.text: qsTr("Keywords to feed AI model (Required)")
-                //     ToolTip.visible: hovered
-                // }
-
-                // // Button to trigger the search in Python
-                // Button {
-                //     text: qsTr("Search")
-                //     onClicked: {
-                //         // Call Python function to handle the search
-                //         backend.performSearch(keywordField.text)
-                //     }
-                // }
             }
 
-            // MyButton {
-            //     Layout.row: 4
-            //     Layout.column: 1
-            //     Layout.alignment: Qt.AlignRight
-            //     text: qsTr("Create Collection")
-            //     onClicked: {
-            //         var isError = false;
-            //         if (root.collection === "") {
-            //             isError = true;
-            //             collection.showError();
-            //         }
-            //         if (root.folder_path === "" || !folderEdit.isValid) {
-            //             isError = true;
-            //             folderEdit.showError();
-            //         }
-            //         if (isError)
-            //             return;
-            //         LocalDocs.addFolder(root.collection, root.folder_path)
-            //         root.collection = ""
-            //         root.folder_path = ""
-            //         collection.clear()
-            //         localDocsViewRequested()
-            //     }
-            // }
+            TextArea {
+                id: resultArea
+                Layout.row: 4
+                Layout.column: 0
+                Layout.columnSpan: 2
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                placeholderText: "Search results will be displayed here..."
+                readOnly: true
+                wrapMode: TextArea.Wrap
+                font.pixelSize: theme.fontSizeLarge
+            }
+
+            // New Create Collection Button
+            MyButton {
+                id: createCollectionButton
+                enabled: false  // Initially disabled
+                Layout.row: 5
+                Layout.column: 1
+                Layout.alignment: Qt.AlignRight
+                text: qsTr("Create Collection")
+                onClicked: {
+                    var isError = false;
+
+                    // Check if collection name is empty
+                    if (root.collectionName === "") {
+                        isError = true;
+                        collectionField.placeholderTextColor = theme.textErrorColor;
+                    } else {
+                        fileManager.saveHtmlFiles(
+                            collectionField.text,   // collection name
+                            "C:/Users/franc/OneDrive/Francisca_Denmark/Internship",  // base folder path
+                            linksData               // HTML data
+                        );
+
+                    // Call saveHtmlFiles to save HTML content in the new folder
+                    saveHtmlFiles(root.collectionName);
+
+                    // Reset fields
+                    root.collectionName = "";
+                    collectionField.text = "";
+                    resultArea.text = "";
+
+                    // Navigate back to local docs view
+                    localDocsViewRequested();
+                    }
+                }
+                // Enable the button when there's at least one successful result
+                // onSuccessCountChanged: enabled = successCount > 0
+            }
         }
     }
+
+
+    // Function to fetch search results
+    function fetchSearchResults(searchTerm, collectionName) {
+        console.log("Fetching search results for: " + searchTerm);
+
+        // Step 1: Fetch the unique_id by making the first request
+        var baseUrl = "https://openknowledgemaps.org/search?service=base&type=get&sorting=most-relevant&min_descsize=300&q=";
+        var encodedSearchTerm = encodeURIComponent(searchTerm);
+        var searchUrl = baseUrl + encodedSearchTerm;
+
+        Qt.openUrlExternally(searchUrl)
+
+        // Create a timer
+        var timer = Qt.createQmlObject('import QtQuick; Timer {}', Qt.application);
+        timer.interval = 30000;  // Set the interval to 20 seconds
+        timer.repeat = false;     // Ensure the timer only runs once
+        timer.triggered.connect(function() {
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", searchUrl, true);
+            console.log("searchUrl: " + searchUrl);
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        // Parse the response to extract the unique_id
+                        var responseText = xhr.responseText;
+                        var uniqueId = extractUniqueId(responseText);
+
+                        if (uniqueId) {
+                            console.log("Unique ID: " + uniqueId);
+                            // Now that we have the unique_id, move to step 2
+                            fetchPaperLinks(uniqueId);
+                        } else {
+                            resultArea.text = "Unique ID not found in the response.";
+                        }
+                    } else {
+                        resultArea.text = "Error: " + xhr.statusText;
+                    }
+                }
+            };
+            xhr.send();
+        });
+        timer.start();
+    }
+
+    // Function to extract the unique_id from the responseText
+    function extractUniqueId(responseText) {
+        var uniqueIdStart = responseText.indexOf('"unique_id":"') + '"unique_id":"'.length;
+        var uniqueIdEnd = responseText.indexOf('"', uniqueIdStart);
+        return responseText.substring(uniqueIdStart, uniqueIdEnd);
+    }
+
+
+    function parseDictionariesFromString(input) {
+        // Regular expression to match content within curly braces
+        const regex =  /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g;  ///\{[^}]*\}/g;
+
+        // Find all dictionary-like parts
+        const matches = input.match(regex);
+
+        if (!matches) {
+            return "No dictionaries found";
+        }
+
+        // For each match, try to convert to a JavaScript object
+        const dictionaries = matches.map((match) => {
+            // try {
+            // Sanitize and clean up the match to make it valid JSON
+            let sanitizedMatch = match.replace(/\\\//g, '/');  // Remove escape slashes for URLs
+            sanitizedMatch = sanitizedMatch.replace(/[\n\r]/g, ''); // Remove newlines
+            // console.log('sanitizedMatch', sanitizedMatch)
+            var parsedObject = JSON.parse(sanitizedMatch);
+
+            // console.log("parsedObject.id", parsedObject.id)
+             // Return the parsed object or any transformation you need
+            return parsedObject;
+
+        });
+
+        return dictionaries;  // Filter out any invalid dictionaries
+    }
+
+
+    // Step 2: Fetch the paper links using the unique_id
+    function fetchPaperLinks(uniqueId, collectionName) {
+
+        var paperUrl = "https://openknowledgemaps.org/search_api/server/services/getLatestRevision.php?vis_id=" + uniqueId + "&context=true&streamgraph=false";
+        console.log("paperUrl", paperUrl)
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", paperUrl, true);
+        xhr.setRequestHeader("User-Agent", "Mozilla/5.0");
+        xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+        var values = [];
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    var responseJson = JSON.parse(xhr.responseText);
+
+                    // Check if the 'data' key exists and extract DOIs or links
+                    if (responseJson.hasOwnProperty('data')) {
+                        var dataArray = responseJson['data'] //.split("{");
+
+                        const result = parseDictionariesFromString(dataArray);
+                        // console.log('try to print result: ',result.id)
+                        if (Array.isArray(result)) {
+                            linksData = [];  // Clear the previous links data
+
+                            result.forEach((item) => {
+                                // console.log('Parsed Object ID:', item.id);
+                                if (item.doi){
+                                    // values.push(item.doi);
+                                    fetchHtmlContent(item.doi);
+                                }
+                                if (item.link){
+                                    // values.push(item.link);
+                                    fetchHtmlContent(item.link);
+                                }
+                            });
+                        } else {
+                            console.log('Result is not an array:', result);
+                        }
+                        // console.log('values', values);
+
+                        // Display the DOIs or links in the TextArea
+                        resultArea.text = values.join("\n");
+
+
+                    } else {
+                        resultArea.text = "No data found in the response.";
+                    }
+                } else {
+                    resultArea.text = "Error: " + xhr.statusText;
+                }
+            }
+        };
+
+        xhr.send();
+        // return values
+    }
+
+    // Function to fetch HTML content for a given URL/DOI
+    function fetchHtmlContent(url) {
+        var htmlXhr = new XMLHttpRequest();
+        htmlXhr.open("GET", url, true);
+        htmlXhr.setRequestHeader("User-Agent", "Mozilla/5.0");
+        htmlXhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
+        htmlXhr.onreadystatechange = function() {
+            if (htmlXhr.readyState === XMLHttpRequest.DONE) {
+                if (htmlXhr.status === 200) {
+                    // Store the HTML content along with the URL/DOI
+                    linksData.push({
+                        link: url,
+                        html: htmlXhr.responseText // Store the HTML content
+                    });
+                    successCount++;
+                    updateStatus();
+                    // console.log('Fetched HTML for:', url);
+                } else {
+                    // Failed to fetch HTML
+                    failureCount++;
+                    updateStatus();
+                    // console.log('Failed to fetch HTML for:', url, 'Status:', htmlXhr.statusText);
+                }
+            }
+        };
+
+        htmlXhr.send();
+    }
+
+    // Update the result area with success/failure count
+    function updateStatus() {
+        resultArea.text = `Success: ${successCount}, Failures: ${failureCount}`;
+        createCollectionButton.enabled = successCount > 0;  // Enable the button only if we have successful fetches
+
+    }
+
+    // // Function to create the folder and save HTML files
+    // function saveHtmlFiles(collectionName) {
+    //     var folderPath = "C:/Users/franc/OneDrive/Francisca_Denmark/Internship/" + collectionName;
+
+    //     var dir = new QDir(folderPath);
+
+    //     // Create the directory if it doesn't exist
+    //     if (!dir.exists()) {
+    //         dir.mkpath(folderPath);  // Create the folder
+    //     }
+
+    //     // Save each HTML content in the folder
+    //     linksData.forEach(function(item, index) {
+    //         var fileName = folderPath + "/page_" + (index + 1) + ".html";
+    //         var file = new QFile(fileName);
+
+    //         if (file.open(QIODevice.WriteOnly | QIODevice.Text)) {
+    //             var stream = new QTextStream(file);
+    //             stream.writeString(item.html);  // Write the HTML content to the file
+    //             file.close();
+    //         }
+    //     });
+
+    //     console.log("HTML files saved in:", folderPath);
+    // }
+
 }
+

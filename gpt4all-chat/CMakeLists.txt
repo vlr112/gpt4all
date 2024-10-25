@@ -267,6 +267,9 @@ qt_add_qml_module(chat
       QML_FILES
       QML_FILES qml/AddCollectionOldView.qml
       RESOURCES Backend.py
+      QML_FILES
+      QML_FILES server.js
+      SOURCES src/myfilemanager.h src/myfilemanager.cpp
 )
 
 qt_add_translations(chat

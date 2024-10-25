@@ -65,6 +65,11 @@ void LocalDocs::aboutToQuit()
     m_database = nullptr;
 }
 
+void LocalDocs::addFolder(const QString &collection){
+    addFolder(collection, QString()); // Call the main function with an empty path
+}
+
+
 void LocalDocs::addFolder(const QString &collection, const QString &path)
 {
     const QUrl url(path);

@@ -19,6 +19,7 @@ public:
 
     LocalDocsModel *localDocsModel() const { return m_localDocsModel; }
 
+    Q_INVOKABLE void addFolder(const QString &collection);
     Q_INVOKABLE void addFolder(const QString &collection, const QString &path);
     Q_INVOKABLE void removeFolder(const QString &collection, const QString &path);
     Q_INVOKABLE void forceIndexing(const QString &collection);
