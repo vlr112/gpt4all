@@ -149,6 +149,7 @@ Rectangle {
                 Layout.maximumWidth: 400
                 Layout.alignment: Qt.AlignRight
                 spacing: 10
+
                 MyDirectoryField {
                     id: folderEdit
                     Layout.fillWidth: true

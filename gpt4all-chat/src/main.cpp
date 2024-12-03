@@ -7,14 +7,16 @@
 #include "modellist.h"
 #include "mysettings.h"
 #include "network.h"
-#include "myfilemanager.h"
+#include "searchmanager.h"
 
 #include <gpt4all-backend/llmodel.h>
 #include <singleapplication.h>
 
+
 #include <QGuiApplication>
 #include <QQmlContext> // Include this for QQmlContext
 #include <QCoreApplication>
+#include <QApplication>
 #include <QObject>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
@@ -22,6 +24,7 @@
 #include <QString>
 #include <QUrl>
 #include <Qt>
+
 
 #ifdef Q_OS_LINUX
 #   include <QIcon>
@@ -55,6 +58,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication::setOrganizationName("nomic.ai");
     QCoreApplication::setOrganizationDomain("gpt4all.io");
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QCoreApplication::setApplicationName("GPT4All");
     QCoreApplication::setApplicationVersion(APP_VERSION);
     QSettings::setDefaultFormat(QSettings::IniFormat);
@@ -70,6 +74,8 @@ int main(int argc, char *argv[])
         app.sendMessage("RAISE_WINDOW");
         return 0;
     }
+
+
 
 #ifdef Q_OS_LINUX
     app.setWindowIcon(QIcon(":/gpt4all/icons/gpt4all.svg"));
@@ -94,17 +100,16 @@ int main(int argc, char *argv[])
     // use the default system locale unless the user has explicitly set it to use a different one.
     MySettings::globalInstance()->setLanguageAndLocale();
 
+    QApplication myapp(argc, argv); // Use QApplication directly
     QQmlApplicationEngine engine;
+    QQmlContext *context = engine.rootContext();
 
-    // Create an instance of FileManager
-    MyFileManager MyfileManager;
+    SearchManager searchManager;
+    engine.rootContext()->setContextProperty("searchManager", &searchManager);
 
-    // Expose the file manager object to QML
-    engine.rootContext()->setContextProperty("MyfileManager", &MyfileManager);
-
-    // Expose the global instance of the Network class to QML
-    // Network *networkManager = Network::globalInstance();
-    // engine.rootContext()->setContextProperty("networkManager", networkManager);
+    // Create and register MySettings instance
+    MySettings *settings = MySettings::globalInstance();
+    engine.rootContext()->setContextProperty("mySettings", settings);
 
     // Add a connection here from MySettings::languageAndLocaleChanged signal to a lambda slot where I can call
     // engine.uiLanguage property
@@ -120,6 +125,7 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonInstance("network", 1, 0, "Network", Network::globalInstance());
     qmlRegisterSingletonInstance("localdocs", 1, 0, "LocalDocs", LocalDocs::globalInstance());
     qmlRegisterUncreatableMetaObject(MySettingsEnums::staticMetaObject, "mysettingsenums", 1, 0, "MySettingsEnums", "Error: only enums");
+    // qmlRegisterSingletonInstance("SearchManager", 1, 0, "SearchManager", SearchManager::globalInstance());
 
     const QUrl url(u"qrc:/gpt4all/main.qml"_s);
 

@@ -28,6 +28,7 @@ option(GPT4ALL_SIGN_INSTALL "Sign installed binaries and installers (requires si
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(QAPPLICATION_CLASS QApplication)
 
 
 # conftests
@@ -70,7 +71,7 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
 
-find_package(Qt6 6.4 COMPONENTS Core HttpServer LinguistTools Pdf Quick QuickDialogs2 Sql Svg REQUIRED)
+find_package(Qt6 6.4 COMPONENTS Core HttpServer LinguistTools Pdf Quick QuickDialogs2 Sql Svg Widgets WebEngineWidgets WebEngineCore REQUIRED )
 
 # Get the Qt6Core target properties
 get_target_property(Qt6Core_INCLUDE_DIRS Qt6::Core INTERFACE_INCLUDE_DIRECTORIES)
@@ -268,8 +269,10 @@ qt_add_qml_module(chat
       QML_FILES qml/AddCollectionOldView.qml
       RESOURCES Backend.py
       QML_FILES
-      QML_FILES server.js
-      SOURCES src/myfilemanager.h src/myfilemanager.cpp
+      QML_FILES
+      SOURCES
+      SOURCES src/searchmanager.h src/searchmanager.cpp
+      RESOURCES
 )
 
 qt_add_translations(chat
@@ -339,10 +342,10 @@ target_include_directories(chat PRIVATE deps/usearch/include
                                         deps/usearch/fp16/include)
 
 target_link_libraries(chat
-    PRIVATE Qt6::Core Qt6::HttpServer Qt6::Pdf Qt6::Quick Qt6::Sql Qt6::Svg)
-target_link_libraries(chat
-    PRIVATE llmodel SingleApplication fmt::fmt)
-
+    PRIVATE  llmodel SingleApplication fmt::fmt Qt6::Core Qt6::HttpServer Qt6::Pdf Qt6::Quick Qt6::Sql Qt6::Svg Qt6::Widgets Qt6::WebEngineWidgets Qt6::WebEngineCore
+)
+# target_link_libraries(chat
+#     PRIVATE llmodel SingleApplication fmt::fmt)
 
 # -- install --
 

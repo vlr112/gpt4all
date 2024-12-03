@@ -76,9 +76,9 @@ Rectangle {
             }
 
             MyButton {
-                Layout.alignment: Qt.AlignBottom | Qt.AlignRight
+                Layout.alignment: Qt.AlignTop | Qt.AlignRight
                 anchors.topMargin: 100
-                text: qsTr("\uFF0B Add Collection from Open Knowledge Maps")
+                text: qsTr("\uFF0B Add Collection using Google Scholar")
                 // z: 1
                 onClicked: {
                     addCollectionOldViewRequested()
@@ -151,8 +151,7 @@ Rectangle {
                 anchors.horizontalCenter: noInstalledLabel.horizontalCenter
                 rightPadding: 50
                 leftPadding: 50
-                text: "\uFF0B Use Open Knowledge Maps"
-                // onClicked: { Qt.openUrlExternally("https://openknowledgemaps.org/index"); }
+                text: "\uFF0B Add Doc Collection using Google Scholar"
                 onClicked: {
                     addCollectionOldViewRequested()
                 }

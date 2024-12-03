@@ -75,6 +75,9 @@ void LocalDocs::addFolder(const QString &collection, const QString &path)
     const QUrl url(path);
     const QString localPath = url.isLocalFile() ? url.toLocalFile() : path;
 
+    qDebug() << "Resolved localPath:" << localPath;
+
+
     const QString embedding_model = EmbeddingLLM::model();
     if (embedding_model.isEmpty()) {
         qWarning() << "ERROR: We have no embedding model";
