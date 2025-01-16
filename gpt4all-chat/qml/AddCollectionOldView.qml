@@ -22,7 +22,9 @@ Rectangle {
         id: theme
     }
 
-    property string targetFolder: "/tmp/Internship_tmp"  // Update this with your desired folder path
+    property string targetFolder: "/mnt/c/tmp/Internship_tmp"  // Update this with your desired folder path
+    property string targetFolderWindows: "C:/tmp/Internship_tmp"  // Update this with your desired folder path
+
 
     color: theme.viewBackground
     signal localDocsViewRequested()
@@ -144,37 +146,84 @@ Rectangle {
                 }
 
                 Button {
+                    id: fetchButton
                     text: qsTr("Fetch Results")
                     onClicked: {
-                            if (keywordField.text !== "" && root.collectionName !== "" ) {
-                            searchManager.fetchAndSave(keywordField.text,
-                                                       root.collectionName ,
-                                                        targetFolder,
-                                                        "Backend" );
+                        if (keywordField.text !== "" && root.collectionName !== "") {
+                            fetchButton.enabled = false;
+                            createCollectionButton.enabled = false;
+
+                            searchManager.fetchAndSave(keywordField.text, root.collectionName, targetFolder, "Backend");
+                            progressBar.visible = true;
+                            progressBar.value = 0;
                         } else {
-                            keywordField.placeholderTextColor = theme.textErrorColor;
+                            if (keywordField.text === "") {
+                                keywordField.placeholderTextColor = theme.textErrorColor;
+                            }
+                            if (root.collectionName === "") {
+                                collectionField.placeholderTextColor = theme.textErrorColor;
+                            }
                         }
                     }
                 }
             }
 
-            MyButton {
+            // Progress Bar
+            ProgressBar {
+                id: progressBar
+                Layout.row: 4
+                Layout.column: 1
+                Layout.minimumWidth: 400
+                Layout.alignment: Qt.AlignRight
+                from: 0
+                to: 100
+                value: 0 // Placeholder progress value
+                visible: false
 
+            }
+
+            MyButton {
+                id: createCollectionButton
                 Layout.row: 5
                 Layout.column: 1
                 Layout.alignment: Qt.AlignRight
                 text: qsTr("Create Collection")
+                enabled: false // Initially disabled
                 onClicked: {
 
                     if (root.collectionName !== "") {
-                                LocalDocs.addFolder(root.collectionName, targetFolder +"/" + root.collectionName);  // Use the centralized folder path
-                                collectionField.clear();
-                                localDocsViewRequested();  // Navigate back to the local docs view
-                            } else {
-                                collectionField.placeholderTextColor = theme.textErrorColor;
-                            }
+                        LocalDocs.addFolder(root.collectionName, targetFolderWindows +"/" + root.collectionName);  // Use the centralized folder path
+                        collectionField.clear();
+                        keywordField.clear();
+                        localDocsViewRequested();  // Navigate back to the local docs view
+                    } else {
+                        collectionField.placeholderTextColor = theme.textErrorColor;
+                    }
                 }
             }
+        }
+    }
+
+    Connections {
+        target: searchManager
+        function onProgressUpdated (progress, status, failedLinks, failedPercentage) {
+            console.log("Progress Updated:", progress, "Status:", status); // Debug log
+            progressBar.visible = true
+            progressBar.value = progress;
+            // statusText.text = status;
+
+            if (progress === 100) {
+                console.log("Fetch completed. Enabling Create Collection button."); // Debug log
+                progressBar.visible = false;
+                fetchButton.enabled = true;
+                createCollectionButton.enabled = true;
+
+                if (failedPercentage > 0) {
+                    failedLinksLabel.text = qsTr("Failed Links: ") + failedPercentage + "% (" + failedLinks.length + ")";
+                    failedLinksDetails.text = failedLinks.join("\n");
+                }
+            }
+
         }
     }
 }

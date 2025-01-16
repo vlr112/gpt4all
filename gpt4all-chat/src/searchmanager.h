@@ -22,6 +22,12 @@ public:
 
     Q_INVOKABLE void fetchAndSave(const QString &searchTerm, const QString &collectionName, const QString &baseFolderPath, const QString &scriptName);
 
+
+    // Q_INVOKABLE void fetchAndSave(const QString &searchTerm, const QString &collectionName, const QString &baseFolderPath, const QString &scriptName);
+
+Q_SIGNALS:
+    void progressUpdated(int progress, const QString &status, QStringList failedLinks, int failedPercentage);
+
 };
 
 

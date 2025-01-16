@@ -273,6 +273,7 @@ qt_add_qml_module(chat
       SOURCES
       SOURCES src/searchmanager.h src/searchmanager.cpp
       RESOURCES
+      RESOURCES
 )
 
 qt_add_translations(chat

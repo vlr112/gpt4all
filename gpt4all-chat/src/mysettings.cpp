@@ -532,6 +532,19 @@ void MySettings::setDevice(const QString &value)
     }
 }
 
+// bool MySettings::useBERTModel() const
+// {
+//     return m_useBERTModel;  // Add this member variable
+// }
+
+// void MySettings::setUseBERTModel(bool useBERT)
+// {
+//     if (m_useBERTModel != useBERT) {
+//         m_useBERTModel = useBERT;
+//         emit useBERTModelChanged();
+//     }
+// }
+
 bool MySettings::forceMetal() const
 {
     return m_forceMetal;

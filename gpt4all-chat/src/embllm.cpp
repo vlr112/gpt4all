@@ -75,7 +75,6 @@ bool EmbeddingLLMWorker::loadModel()
         m_nomicAPIKey = MySettings::globalInstance()->localDocsNomicAPIKey();
         return true;
     }
-
 #ifdef Q_OS_DARWIN
     static const QString embPathFmt = u"%1/../Resources/%2"_s;
 #else
@@ -421,6 +420,7 @@ QString EmbeddingLLM::model()
 {
     return EMBEDDING_MODEL_NAME;
 }
+
 
 // TODO(jared): embed using all necessary embedding models given collection
 std::vector<float> EmbeddingLLM::generateQueryEmbedding(const QString &text)

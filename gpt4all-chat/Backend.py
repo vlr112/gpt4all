@@ -47,7 +47,7 @@ options.add_experimental_option("useAutomationExtension", False)
 # Lock to ensure thread-safe interaction with the shared WebDriver instance
 webdriver_lock = threading.Lock()
 
-def process_link(driver, lock, index, link, output_folder):
+def process_link(driver, lock, index, link, output_folder, total_links, failed_links):
     try:
         with lock:
             driver.get(link)
@@ -61,10 +61,16 @@ def process_link(driver, lock, index, link, output_folder):
             with open(file_path, 'wb') as file:
                 mhtml_data = driver.execute_cdp_cmd("Page.captureSnapshot", {"format": "mhtml"})
                 file.write(mhtml_data["data"].encode('utf-8'))
-            print(f"Saved MHTML for link {index + 1} at {file_path}")
+
+
+            # Emit progress
+            progress = int(((index + 1) / total_links) * 100)
+            print(json.dumps({"progress": progress, "status": f"Saved MHTML for link {index + 1} at {file_path}"}), flush=True)
 
     except Exception as e:
-        print(f"Failed to process link {index + 1}: {link}\nError: {e}")
+        failed_links.append(link)  # Add failed link to the list
+        progress = int(((index + 1) / total_links) * 100)
+        print(json.dumps({"progress": progress, "status": f"Failed to process link {index + 1}: {str(e)}"}), flush=True)
 
 
 # Fetch links from Google Scholar
@@ -113,9 +119,13 @@ def main(output_dir, query, dateLow='', dateHigh=''):
 
     time.sleep(10)  # Wait for the page to load
 
-    links = fetch_links(driver, max_links=10)  # Fetch links from Google Scholar
-    print("Number of links found:", len(links))
-    print(links)
+    links = fetch_links(driver, max_links=5)  # Fetch links from Google Scholar
+    failed_links = []
+
+    print(json.dumps({"progress": 0, "status": f"Found {len(links)} links to process"}), flush=True)
+
+    # print("Number of links found:", len(links))
+    # print(links)
 
     # Ensure save path directory exists
     os.makedirs(output_dir, exist_ok=True)
@@ -123,7 +133,7 @@ def main(output_dir, query, dateLow='', dateHigh=''):
     # Use a thread-safe lock for WebDriver reuse
     with ThreadPoolExecutor(max_workers=min(10, len(links))) as executor:
         futures = [
-            executor.submit(process_link, driver, webdriver_lock, index, link, output_dir)
+            executor.submit(process_link, driver, webdriver_lock, index, link, output_dir, len(links), failed_links)
             for index, link in enumerate(links)
         ]
         # Wait for all threads to complete
@@ -132,9 +142,16 @@ def main(output_dir, query, dateLow='', dateHigh=''):
 
     driver.quit()
 
+    failed_count = len(failed_links)
+    failed_percentage = int((failed_count / len(links)) * 100) if links else 0
+    print(json.dumps({
+        "progress": 100,
+        "status": "All links processed",
+        "failed_links": failed_links,
+        "failed_percentage": failed_percentage
+    }), flush=True)
+
 if __name__ == "__main__":
-    # output_folder = "/home/franky/mhtml_files"
-    # os.makedirs(output_folder, exist_ok=True)
 
     parser = argparse.ArgumentParser(description="Save webpage as MHTML using Selenium.")
     parser.add_argument("--output", required=True, help="Output directory to save MHTML files.")
@@ -144,8 +161,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args.output, args.query, args.dateLow, args.dateHigh)
-
-
 
 
 
